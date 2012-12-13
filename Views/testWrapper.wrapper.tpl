@@ -1,0 +1,9 @@
+<html>
+    <head>
+        <!--[HEAD]-->
+    </head>
+    <body>
+        <div>blah</div>
+        {$content}
+    </body>
+</html>
