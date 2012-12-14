@@ -21,7 +21,12 @@
     },
     "dependencies": {
         "prime": "*",
-        "Classy":"*"
+        "Classy":"*",
+        "protolus-router":"*",
+        "protolus-application":"*",
+        "protolus-templates":"*",
+        "protolus-resource":"*",
+        "protolus-data":"*"
     },
     "devDependencies": {
         "mocha": "*",

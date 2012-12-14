@@ -6,16 +6,16 @@ Layout
 ------
 Protolus expects a certain directory structure:
 
-+App
- +Panels
- +Controllers
- -routes.conf
-+Classes
-+node_modules
- +main
-  -main.less
-  -main.js
-  -package.json
+* App
+*   Panels
+*   Controllers
+*   routes.conf
+* Classes
+* node_modules
+*   main
+*       main.less
+*       main.js
+*       package.json
 
 
 Routing

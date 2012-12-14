@@ -110,24 +110,22 @@ var Protolus = {};
 Protolus.Router = require('protolus-router');
 Protolus.Resource = require('protolus-resource');
 Protolus.Templates = require('protolus-templates');
-Protolus.Application = require('./protolus-application');
-Protolus.PanelServer = function(){
+Protolus.Application = require('protolus-application');
+Protolus.PanelServer = function(options){
+    if(!options) options = {};
     var router = new Protolus.Router({
         ini : 'routes.conf',
         passthru : true
     });
+    Protolus.Templates.templateDirectory = '/App/Panels';
+    Protolus.Templates.scriptDirectory = '/App/Controllers';
+    Protolus.Templates({});
     var application = new Protolus.Application.WebServer({
-        port : 484,
+        port : (options.port || 80),
         onServe : function(request, response){
-            var location = request.parts.path.substring(1);
-            console.log('bb', location);
+            var location = request.parts.path.substring(1); // strip leading slash
             router.route(location, function(routedLocation){
-                console.log('bb', routedLocation);
                 if(Protolus.Templates.Panel.exists(routedLocation)){
-                    Protolus.Templates({
-                        templateDirectory : '/Views',
-                        scriptDirectory : '/Controllers'
-                    });
                     Protolus.Templates.renderPage(routedLocation, function(html){
                         response.end(html);
                     });
@@ -136,6 +134,10 @@ Protolus.PanelServer = function(){
                 }
             });
         }
+    });
+    application.addJob();
+    application.loadConfiguration('Configuration/production.private.json', function(config){
+        application.removeJob();
     });
     return application;
 };
