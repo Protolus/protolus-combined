@@ -113,6 +113,7 @@ Protolus.Templates = require('protolus-templates');
 Protolus.Application = require('protolus-application');
 Protolus.PanelServer = function(options){
     if(!options) options = {};
+    if(!options.environment) options.environment = 'production';
     var router = new Protolus.Router({
         ini : 'routes.conf',
         passthru : true
@@ -120,23 +121,40 @@ Protolus.PanelServer = function(options){
     Protolus.Templates.templateDirectory = '/App/Panels';
     Protolus.Templates.scriptDirectory = '/App/Controllers';
     Protolus.Templates({});
+    Protolus.Templates.Template.Smarty.macros['require'] = function(node){
+        if(node.attributes.name == undefined) throw('require macro requires \'name\' attribute');
+        var resources = node.attributes.name.split(',');
+        array.forEach(resources, function(resource){
+            new Protolus.Resource(resource);
+        });
+        //todo:inline
+        //todo: handle in-browser
+        return '';
+    };
     var application = new Protolus.Application.WebServer({
         port : (options.port || 80),
         onServe : function(request, response){
-            var location = request.parts.path.substring(1); // strip leading slash
-            router.route(location, function(routedLocation){
-                if(Protolus.Templates.Panel.exists(routedLocation)){
-                    Protolus.Templates.renderPage(routedLocation, function(html){
-                        response.end(html);
-                    });
-                }else{
-                    response.end('OMG 404');
-                }
+            Protolus.Resource.handleResourceCalls(request, response, function(){
+                var location = request.parts.path.substring(1); // strip leading slash
+                //todo: accurate browser action
+                router.route(location, 'GET', function(routedLocation){
+                    if(Protolus.Templates.Panel.exists(routedLocation)){
+                        Protolus.Templates.renderPage(routedLocation, function(html){
+                            Protolus.Resource.headIncludes(true, function(tags){
+                                html = Protolus.Templates.insertTextAtTarget(tags.join("\n"), 'head', html);
+                                response.end(html);
+                            });
+                        });
+                    }else{
+                        response.end('OMG 404');
+                    }
+                });
             });
         }
     });
     application.addJob();
-    application.loadConfiguration('Configuration/production.private.json', function(config){
+    var configurationFile = 'Configuration/'+options.environment+'.private.json';
+    application.loadConfiguration(configurationFile, function(){
         application.removeJob();
     });
     return application;
