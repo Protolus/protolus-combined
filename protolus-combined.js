@@ -1,147 +1,61 @@
 //todo: events support
-var prime = require('prime');
+var ext = require('prime-ext');
+var prime = ext(require('prime'));
 var Class = require('Classy');
 var type = require('prime/util/type');
-var string = require('prime/es5/string');
-var array = require('prime/es5/array');
-array.forEachEmission = function(collection, callback, complete){ //one at a time
-    var a = {count : 0};
-    var fn = function(collection, callback, complete){
-        if(a.count >= collection.length){
-            if(complete) complete();
-        }else{
-            callback(collection[a.count], a.count, function(){
-                a.count++;
-                fn(collection, callback, complete);
-            });
-        }
-    };
-    fn(collection, callback, complete);
-};
-array.forAllEmissions = function(collection, callback, complete){ //parallel
-    var a = {count : 0};
-    var begin = function(){
-        a.count++;
-    };
-    var finish = function(){
-        a.count--;
-        if(a.count == 0 && complete) complete();
-    };
-    array.forEach(collection, function(value, key){
-        begin();
-        callback(value, key, function(){
-           finish(); 
-        });
-    });
-};
-array.combine = function(thisArray, thatArray){ //parallel
-    var result = [];
-    array.forEach(thatArray, function(value, key){
-        result.push(value);
-    });
-    return result;
-};
-array.contains = function(haystack, needle){ //parallel
-    return haystack.indexOf(needle) != -1;
-};
-prime.keys = function(object){
-    var result = [];
-    for(var key in object) result.push(key);
-    return result;
-};
-prime.values = function(object){
-    var result = [];
-    for(var key in object) result.push(object[key]);
-    return result;
-};
-prime.clone = function(obj){
-    var result;
-    switch(type(obj)){
-        case 'object':
-            result = {};
-            for(var key in obj){
-                result[key] = prime.clone(obj[key]);
-            }
-            break;
-        case 'array':
-            result = obj.slice(0);
-            break;
-        default : result = obj;
-    }
-    return result;
-};
-prime.merge = function(objOne, objTwo){
-    var result = {};
-    prime.forEach(objOne, function(item, key){
-        result[key] = item;
-    });
-    prime.forEach(objTwo, function(item, key){
-        if(!result[key]) result[key] = item;
-    });
-    return result;
-};
-string.startsWith = function(str, sub){
-    return str.indexOf(sub) === 0; //likely more expensive than needed
-};
-string.endsWith = function(str, sub){
-    return str.substring(str.length-sub.length) === sub;
-};
+var string = ext(require('prime/es5/string'));
+var array = ext(require('prime/es5/array'));
 var fn = require('prime/es5/function');
 var regexp = require('prime/es5/regexp');
 var Emitter = require('prime/util/emitter');
 var fs = require('fs');
-
-var Options = new Class({
-    setOptions : function(options){
-        if(!this.options) this.options = {};
-        var value;
-        for(var key in options){
-            value = options[key];
-            if(this.on && key.substring(0,2) == 'on' && key.substring(2,3) == key.substring(2,3).toUpperCase()){
-                var event = key.substring(2,3).toLowerCase()+key.substring(3);
-                this.on(event, value);
-            }
-            this.options[key] = value;
-        }
-    }
-});
+var Options = require('prime-ext/options');
+var Registry = require('prime-ext/registry');
+var Filters = require('prime-ext/filters');
+var InternalWorker = require('prime-ext/internal-worker');
+var Smarty = require('tag-template/smarty');
 
 var Protolus = {};
 Protolus.Router = require('protolus-router');
 Protolus.Resource = require('protolus-resource');
 Protolus.Templates = require('protolus-templates');
 Protolus.Application = require('protolus-application');
+Protolus.routes = 'App/routes.conf';
 Protolus.PanelServer = function(options){
     if(!options) options = {};
     if(!options.environment) options.environment = 'production';
     var router = new Protolus.Router({
-        ini : 'routes.conf',
+        ini : Protolus.routes,
         passthru : true
     });
-    Protolus.Templates.templateDirectory = '/App/Panels';
-    Protolus.Templates.scriptDirectory = '/App/Controllers';
-    Protolus.Templates({});
-    Protolus.Templates.Template.Smarty.macros['require'] = function(node){
+    Protolus.Templates.set({
+        base : (options.base || process.cwd()),
+        templateDirectory : '/App/Panels',
+        scriptDirectory : '/App/Controllers'
+    });
+    var registry = Protolus.Resource.Registry();
+    Smarty.registerMacro('require', function(node){
         if(node.attributes.name == undefined) throw('require macro requires \'name\' attribute');
         var resources = node.attributes.name.split(',');
         array.forEach(resources, function(resource){
-            new Protolus.Resource(resource);
+            Protolus.Resource.import(resource, registry);
         });
         //todo:inline
         //todo: handle in-browser
         return '';
-    };
+    });
     var application = new Protolus.Application.WebServer({
         port : (options.port || 80),
         onServe : function(request, response){
-            Protolus.Resource.handleResourceCalls(request, response, function(){
+            Protolus.Resource.handle(request, response, function(){
                 var location = request.parts.path.substring(1); // strip leading slash
                 //todo: accurate browser action
                 router.route(location, 'GET', function(routedLocation){
                     if(Protolus.Templates.Panel.exists(routedLocation)){
                         Protolus.Templates.renderPage(routedLocation, function(html){
-                            Protolus.Resource.headIncludes(true, function(tags){
-                                html = Protolus.Templates.insertTextAtTarget(tags.join("\n"), 'head', html);
+                            Protolus.Resource.head(true, function(tags){
+                                var pageTags = tags.join("\n        ");
+                                if(pageTags) html = Protolus.Templates.insertTextAtTarget(pageTags, 'head', html);
                                 response.end(html);
                             });
                         });
@@ -158,6 +72,9 @@ Protolus.PanelServer = function(options){
         application.removeJob();
     });
     return application;
+};
+Protolus.internalRequire = function(topLevelRequire){
+    Protolus.Resource.registerRequire(topLevelRequire);
 };
 
 module.exports = Protolus;
