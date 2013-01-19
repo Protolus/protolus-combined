@@ -14,10 +14,13 @@ var Registry = require('prime-ext/registry');
 var Filters = require('prime-ext/filters');
 var InternalWorker = require('prime-ext/internal-worker');
 var Smarty = require('tag-template/smarty');
+var NPMtrospect = require('../npm-trospect');
 
 var Protolus = {};
 Protolus.Router = require('protolus-router');
 Protolus.Resource = require('protolus-resource');
+require('protolus-resource/handler-js');
+require('protolus-resource/handler-css');
 Protolus.Templates = require('protolus-templates');
 Protolus.Application = require('protolus-application');
 Protolus.routes = 'App/routes.conf';
@@ -33,7 +36,7 @@ Protolus.PanelServer = function(options){
         templateDirectory : '/App/Panels',
         scriptDirectory : '/App/Controllers'
     });
-    var registry = Protolus.Resource.Registry();
+    var registry = new Protolus.Resource.Registry();
     Smarty.registerMacro('require', function(node){
         if(node.attributes.name == undefined) throw('require macro requires \'name\' attribute');
         var resources = node.attributes.name.split(',');
@@ -74,7 +77,7 @@ Protolus.PanelServer = function(options){
     return application;
 };
 Protolus.internalRequire = function(topLevelRequire){
-    Protolus.Resource.registerRequire(topLevelRequire);
+    NPMtrospect.require = topLevelRequire;
 };
 
 module.exports = Protolus;
