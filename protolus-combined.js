@@ -37,11 +37,27 @@ Protolus.PanelServer = function(options){
         scriptDirectory : '/App/Controllers'
     });
     var registry = new Protolus.Resource.Registry();
+    var requirer = {working : false};
+    var renderHeadAndReturnPage = function(html, request, response, headOptions, path){
+        Protolus.Resource.head(headOptions, function(tags){
+            console.log('rendered', path);
+            var pageTags = tags.join("\n        ");
+            if(pageTags) html = Protolus.Templates.insertTextAtTarget(pageTags, 'head', html);
+            response.end(html);
+        });
+    };
     Smarty.registerMacro('require', function(node){
         if(node.attributes.name == undefined) throw('require macro requires \'name\' attribute');
         var resources = node.attributes.name.split(',');
-        array.forEach(resources, function(resource){
-            Protolus.Resource.import(resource, registry);
+        requirer.working = true;
+        array.forAllEmissions(resources, function(resource, index, rtrn){
+            
+            Protolus.Resource.import(resource, registry, function(){
+                rtrn();
+            });
+        }, function(){
+            if(type(requirer.working) == 'function') requirer.working();
+            requirer.working = false;
         });
         //todo:inline
         //todo: handle in-browser
@@ -56,11 +72,18 @@ Protolus.PanelServer = function(options){
                 router.route(location, 'GET', function(routedLocation){
                     if(Protolus.Templates.Panel.exists(routedLocation)){
                         Protolus.Templates.renderPage(routedLocation, function(html){
-                            Protolus.Resource.head(true, function(tags){
-                                var pageTags = tags.join("\n        ");
-                                if(pageTags) html = Protolus.Templates.insertTextAtTarget(pageTags, 'head', html);
-                                response.end(html);
-                            });
+                            if(!requirer.working) renderHeadAndReturnPage(html, request, response, {
+                                dependencies : true,
+                                compact : true,
+                                registry : registry
+                            }, routedLocation);
+                            else requirer.working = function(){
+                                renderHeadAndReturnPage(html, request, response, {
+                                    dependencies : true,
+                                    compact : true,
+                                    registry : registry
+                                }, routedLocation);
+                            }
                         });
                     }else{
                         response.end('OMG 404');

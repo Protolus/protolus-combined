@@ -6,16 +6,16 @@ Layout
 ------
 Protolus expects a certain directory structure:
 
-* App
-*   Panels
-*   Controllers
-*   routes.conf
-* Classes
-* node_modules
-*   main
-*       main.less
-*       main.js
-*       package.json
+App
+=== Panels/
+=== Controllers/
+=== routes.conf
+Classes
+node_modules
+=== main
+====== main.css
+====== main.js
+====== package.json (which includes a 'resources' array which references main.(js/css))
 
 
 Routing
@@ -43,6 +43,10 @@ For example, if I had a panel 'signup/payment' I would put it at:
 and I would put that controller at
     
     App/Controllers/signup/payment.controller.js
+    
+We also adds a macro to the mix for resource management: The `require` macro takes a comma separated list of node_modules to ship over to the client, and dependencies are resolved as you'd expect. This is built for inclusion in the head of the generated document and types are automatically served from endpoints like:
+
+    /<type>/[dependencies/][compact/]module1.module2
 
 Controllers
 -----------
@@ -57,7 +61,7 @@ Formerly resources lived in their own directory, now Protolus is piggybacking th
 Startup
 -------
 
-    var Protolus = require('./protolus-combined');
+    var Protolus = require('protolus');
 
     var application = Protolus.PanelServer();
     application.start();
