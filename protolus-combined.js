@@ -86,7 +86,15 @@ Protolus.PanelServer = function(options){
                             }
                         });
                     }else{
-                        response.end('OMG 404');
+                        fs.exists(routedLocation, function(exists){
+                            if(!exists){
+                                response.end('OMG 404');
+                            }else{
+                                fs.readFile(routedLocation, function(err, data){
+                                    response.end(data);
+                                })
+                            }
+                        });
                     }
                 });
             });
