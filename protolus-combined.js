@@ -109,6 +109,7 @@ Protolus.PanelServer = function(options){
 };
 Protolus.internalRequire = function(topLevelRequire){
     NPMtrospect.require = topLevelRequire;
+    Protolus.Templates.internalRequire = topLevelRequire;
 };
 
 module.exports = Protolus;

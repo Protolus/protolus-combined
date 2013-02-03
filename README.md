@@ -54,6 +54,21 @@ The controller is a simple js script who's job is to fetch & stuff any data that
 
     renderer.set('data', myVar);
     
+Data
+----
+    
+Datasources are registered by creating an entry in the configuration
+
+    "DB:myDataSourceName" : {
+        "mode" : "msql",
+        "host" : "localhost",
+        "user" : "dbuser",
+        "password" : "P455W0RD",
+        "database" : "mysqldbname"
+    }
+
+Check out the [docs](https://npmjs.org/package/protolus-data) to build your ORM, DAL or any number of minimally meaningful acronyms!
+    
 Resources
 ---------
 Formerly resources lived in their own directory, now Protolus is piggybacking the npm format which means, not only does publishing the module serve double duty, but it also makes it easy to serve existing browser-compatible npm modules. Check the [documentation](https://npmjs.org/package/protolus-resource).
@@ -68,7 +83,15 @@ Startup
 
 This also gives you access to the protolus libraries at: Protolus.Templates, Protolus.Router, Protolus.Resource, Protolus.Data and Protolus.Application.
 
-Sorry about the slim docs, more to come.
+Testing
+-------
+Tests use mocha/should to execute the tests from root
+
+    mocha
+
+If you find any rough edges, please submit a bug!
+
+Right now this only supports credit cards, but this could easily expand to gift cards, EBT, checks, etc. If you have a specific interest, contact me.
 
 Enjoy,
 
