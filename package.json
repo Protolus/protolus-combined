@@ -1,7 +1,7 @@
 {
     "name": "protolus",
     "homepage": "https://github.com/Protolus/protolus-combined",
-    "version": "0.0.6-alpha",
+    "version": "0.0.7-alpha",
     "main": "protolus-combined.js",
     "description": "The rollup of all the Protolus MVC/MVVM Framework, imposing layout and structural standards",
     "keywords": [
@@ -20,7 +20,7 @@
         "url": "git://github.com/Protolus/protolus-combined.git"
     },
     "dependencies": {
-        "prime": "*",
+        "prime": "0.0.5-alpha",
         "Classy":"*",
         "protolus-router":"*",
         "protolus-application":"*",
