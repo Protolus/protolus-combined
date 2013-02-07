@@ -14,7 +14,7 @@ var Registry = require('prime-ext/registry');
 var Filters = require('prime-ext/filters');
 var InternalWorker = require('prime-ext/internal-worker');
 var Smarty = require('tag-template/smarty');
-var NPMtrospect = require('../npm-trospect');
+var NPMtrospect = require('npm-trospect');
 
 var Protolus = {};
 Protolus.Router = require('protolus-router');
@@ -110,6 +110,7 @@ Protolus.PanelServer = function(options){
 Protolus.internalRequire = function(topLevelRequire){
     NPMtrospect.require = topLevelRequire;
     Protolus.Templates.internalRequire = topLevelRequire;
+    Resource.internalRequire(topLevelRequire);
 };
 
 module.exports = Protolus;
