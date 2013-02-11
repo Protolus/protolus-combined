@@ -65,9 +65,10 @@ Protolus.PanelServer = function(options){
     });
     var application = new Protolus.Application.WebServer({
         port : (options.port || 80),
-        onServe : function(request, response){
+        onServe : function(request, response, connection){
             Protolus.Resource.handle(request, response, function(){
                 var location = request.parts.path.substring(1); // strip leading slash
+                Templates.env.WebApplication = connection;
                 //todo: accurate browser action
                 router.route(location, 'GET', function(routedLocation){
                     if(Protolus.Templates.Panel.exists(routedLocation)){
