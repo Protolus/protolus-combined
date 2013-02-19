@@ -68,22 +68,24 @@ Protolus.PanelServer = function(options){
         onServe : function(request, response, connection){
             Protolus.Resource.handle(request, response, function(){
                 var location = request.parts.path.substring(1); // strip leading slash
-                Templates.env.WebApplication = connection;
-                //todo: accurate browser action
-                router.route(location, 'GET', function(routedLocation){
+                router.route(location, request.method.toUpperCase(), function(routedLocation){
                     if(Protolus.Templates.Panel.exists(routedLocation)){
-                        Protolus.Templates.renderPage(routedLocation, function(html){
-                            if(!requirer.working) renderHeadAndReturnPage(html, request, response, {
-                                dependencies : true,
-                                compact : true,
-                                registry : registry
-                            }, routedLocation);
-                            else requirer.working = function(){
-                                renderHeadAndReturnPage(html, request, response, {
+                        Protolus.Templates.renderPage(routedLocation, {
+                            onSuccess : function(html){
+                                if(!requirer.working) renderHeadAndReturnPage(html, request, response, {
                                     dependencies : true,
                                     compact : true,
                                     registry : registry
                                 }, routedLocation);
+                                else requirer.working = function(){
+                                    renderHeadAndReturnPage(html, request, response, {
+                                        dependencies : true,
+                                        compact : true,
+                                        registry : registry
+                                    }, routedLocation);
+                                }
+                            }, env : {
+                                WebApplication : connection
                             }
                         });
                     }else{
