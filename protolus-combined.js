@@ -67,6 +67,7 @@ Protolus.PanelServer = function(options){
         port : (options.port || 80),
         onServe : function(request, response, connection){
             Protolus.Resource.handle(request, response, function(){
+                if(request.parts.path.substring(-1) == '/') request.parts.path += 'index';
                 var location = request.parts.path.substring(1); // strip leading slash
                 router.route(location, request.method.toUpperCase(), function(routedLocation){
                     if(Protolus.Templates.Panel.exists(routedLocation)){

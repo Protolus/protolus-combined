@@ -1,10 +1,11 @@
 {
     "name": "protolus",
     "homepage": "https://github.com/Protolus/protolus-combined",
-    "version": "0.0.11-alpha",
+    "version": "0.0.12-alpha",
     "main": "protolus-combined.js",
-    "description": "The rollup of all the Protolus MVC/MVVM Framework, imposing layout and structural standards",
+    "description": "The rollup of Protolus (an MV* Framework) which imposes layout and structural standards",
     "keywords": [
+        "MV*",
         "MVVM",
         "MVC",
         "protolus"

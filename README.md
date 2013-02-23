@@ -1,6 +1,26 @@
 protolus.js
 ===========
-The combined Protolus environment (still under development, some of the packages are relatively stable... but at the top level things are still quite rough (including this doc))
+The combined Protolus environment. Protolus is a view controller framework which does not couple views to data objects, but instead sees each view as an atomic unit which should be able to fetch it's own data, which may be a composite of many data objects. I believe this model is more representative of how we actually work on the web rather than being a naive object to template mapping, or at the other end of the spectrum: a reimplementation of Swing in js.
+
+Getting Started
+---------------
+
+get protolus:
+
+    npm install protolus
+    
+make your project directory:
+
+    mkdir myProject
+    cd myProject
+    
+now initialize a new protolus project:
+
+    curl http://protol.us/fini.sh | sh
+    
+now run your app:
+
+    node application.js
 
 Layout
 ------
@@ -54,6 +74,53 @@ The controller is a simple js script who's job is to fetch & stuff any data that
 
     renderer.set('data', myVar);
     
+additionally you often have to wait for an asynchronous task to complete which you can do like:
+
+    renderer.async(function(done){
+        someFunction(function(){
+            done();
+        });
+    });
+    
+and you have 'WebApplication' available to you which provides:
+
+    WebApplcation.getSession(key);
+    
+and
+    
+    WebApplcation.setSession(key, value);
+    
+for managing session variables
+
+    WebApplcation.getCookie(key);
+    
+and
+
+    WebApplcation.setCookie(key, value);
+    
+for managing cookies
+
+
+    WebApplcation.getGet(key);
+    
+and
+
+    WebApplcation.getPost(key);
+    
+for managing incoming variables
+
+and as a rollup for all these 
+
+    WebApplcation.get(key)
+    
+which prefers get, then post, then session, then cookies
+
+and last to pull your current session id:
+
+    WebApplcation.sessionID()
+    
+Protolus.Data is also exposed as 'Data', so you can interact with the object layer, if you are using it.
+    
 Data
 ----
     
@@ -81,7 +148,13 @@ Startup
     var application = Protolus.PanelServer();
     application.start();
 
-This also gives you access to the protolus libraries at: Protolus.Templates, Protolus.Router, Protolus.Resource, Protolus.Data and Protolus.Application.
+This also gives you access to the protolus libraries at:
+
+- Protolus.Templates 
+- Protolus.Router
+- Protolus.Resource
+- Protolus.Data
+- Protolus.Application
 
 Testing
 -------
