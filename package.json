@@ -1,7 +1,7 @@
 {
     "name": "protolus",
     "homepage": "https://github.com/Protolus/protolus-combined",
-    "version": "0.0.12-alpha",
+    "version": "0.0.13-alpha",
     "main": "protolus-combined.js",
     "description": "The rollup of Protolus (an MV* Framework) which imposes layout and structural standards",
     "keywords": [

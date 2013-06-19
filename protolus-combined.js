@@ -24,6 +24,7 @@ require('protolus-resource/handler-css');
 Protolus.Templates = require('protolus-templates');
 Protolus.Application = require('protolus-application');
 Protolus.routes = 'App/routes.conf';
+var TLRQ = require;
 Protolus.PanelServer = function(options){
     if(!options) options = {};
     if(!options.environment) options.environment = 'production';
@@ -86,7 +87,7 @@ Protolus.PanelServer = function(options){
                                     }, routedLocation);
                                 }
                             }, env : {
-                                WebApplication : connection
+                                application : connection
                             }
                         });
                     }else{
@@ -106,15 +107,51 @@ Protolus.PanelServer = function(options){
     });
     application.addJob();
     var configurationFile = 'Configuration/'+options.environment+'.private.json';
-    application.loadConfiguration(configurationFile, function(){
+    application.loadConfiguration(configurationFile, function(conf){
+        if(Protolus.Data){
+            prime.filter(application.configurations, function(key){
+                return key.indexOf('DB:') === 0;
+            }, function(databasesToRegister){
+                prime.each(databasesToRegister, function(options, key){
+                    var name = key.substring(3);
+                    var db;
+                    //todo: allow sessions to be linked to datasources
+                    switch(options.type){
+                        case 'mongo':
+                            if(!Protolus.Data.Source.Mongo) Protolus.Data.loadSource('Mongo');
+                            db = new Protolus.Data.Source.Mongo(options);
+                            break;
+                        case 'mysql':
+                            if(!Protolus.Data.Source.MySQL) Protolus.Data.loadSource('MySQL');
+                            db = new Protolus.Data.Source.MySQL(options);
+                            break;
+                        //todo: more types
+                        default : throw('unknown datasource type: '+options.type);
+                    }
+                    Protolus.Data.sources[name] = db;
+                    //console.log('name', db);
+                })
+            });
+        }
         application.removeJob();
     });
     return application;
 };
 Protolus.internalRequire = function(topLevelRequire){
     NPMtrospect.require = topLevelRequire;
+    if(Protolus.Data) Protolus.Data.internalRequire = topLevelRequire;
     Protolus.Templates.internalRequire = topLevelRequire;
     Protolus.Resource.internalRequire(topLevelRequire);
+    TLRQ = topLevelRequire;
 };
-
+if(!GLOBAL.Protolus) GLOBAL.Protolus = Protolus;
+Protolus.with = function(module){
+    switch(module.toLowerCase()){
+        case 'data':
+            Protolus.Data = require('protolus-data');
+            break;
+        default : throw('unknown protolus module: '+module);
+    }
+    return Protolus;
+};
 module.exports = Protolus;

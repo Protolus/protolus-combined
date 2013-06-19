@@ -28,10 +28,15 @@ Protolus expects a certain directory structure:
 
     App
     _ Panels/
+    __ index.panel.tpl
+    __ default.wrapper.tpl
+    __ ...
     _ Controllers/
+    __ index.wrapper.js
+    __ ...
     _ routes.conf
-    Classes
     node_modules
+    _ MyAwesomeDataObject.js
     _ main
     __ main.css
     __ main.js
@@ -82,42 +87,42 @@ additionally you often have to wait for an asynchronous task to complete which y
         });
     });
     
-and you have 'WebApplication' available to you which provides:
+and you have 'application' available to you which provides:
 
-    WebApplcation.getSession(key);
+    application.getSession(key);
     
 and
     
-    WebApplcation.setSession(key, value);
+    application.setSession(key, value);
     
 for managing session variables
 
-    WebApplcation.getCookie(key);
+    application.getCookie(key);
     
 and
 
-    WebApplcation.setCookie(key, value);
+    application.setCookie(key, value);
     
 for managing cookies
 
 
-    WebApplcation.getGet(key);
+    application.getGet(key);
     
 and
 
-    WebApplcation.getPost(key);
+    application.getPost(key);
     
 for managing incoming variables
 
 and as a rollup for all these 
 
-    WebApplcation.get(key)
+    application.get(key)
     
 which prefers get, then post, then session, then cookies
 
 and last to pull your current session id:
 
-    WebApplcation.sessionID()
+    application.sessionID()
     
 Protolus.Data is also exposed as 'Data', so you can interact with the object layer, if you are using it.
     
@@ -150,11 +155,18 @@ Startup
 
 This also gives you access to the protolus libraries at:
 
-- Protolus.Templates 
-- Protolus.Router
-- Protolus.Resource
-- Protolus.Data
-- Protolus.Application
+- [Protolus.Templates](https://npmjs.org/package/protolus-templates)
+- [Protolus.Router](https://npmjs.org/package/protolus-router)
+- [Protolus.Resource](https://npmjs.org/package/protolus-resource)
+- [Protolus.Application](https://npmjs.org/package/protolus-application)
+
+and any templates you create will have both 'renderer' and 'application' (an instance of Protolus.Application.Connection) exposed for use.
+
+You can also include the data module:
+
+    var Protolus = require('protolus').with('data');
+    
+This exposes [Protolus.Data](https://npmjs.org/package/protolus-data)
 
 Testing
 -------
